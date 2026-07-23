@@ -24,7 +24,6 @@ credentials.json
 *.onnx
 models/checkpoints/
 data/raw/
-*.csv
 
 # ── FastAPI · DB ──
 *.sqlite3
