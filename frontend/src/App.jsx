@@ -1,121 +1,81 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+import { useState, useEffect } from 'react'
 import './App.css'
 
+const API_BASE = "http://127.0.0.1:8000"
+
 function App() {
-  const [count, setCount] = useState(0)
+  const [list, setList] = useState([])
+  const [keyword, setKeyword] = useState("")
+  const [page, setPage] = useState(1)
+
+  useEffect(() => {
+    loadList()
+  }, [])
+
+  const loadList = async () => {
+    const res = await fetch(`${API_BASE}/lawqna`)
+    const data = await res.json()
+    setList(data)
+  }
+
+const handleSearch = async () => {
+  console.log("1. 검색 시작! 키워드:", keyword);
+  try {
+  const trimmedKeyword = keyword.trim()  // 공백 제거
+  const res = await fetch(`${API_BASE}/lawqna/search?keyword=${encodeURIComponent(trimmedKeyword)}`)
+    console.log("2. 응답 상태코드:", res.status);
+    
+    const data = await res.json();
+    console.log("3. 받아온 데이터:", data);
+    
+    setList(data);
+  } catch (err) {
+    console.error("4. 통신/파싱 에러 발생:", err);
+  }
+}
+
+const handleNext = async () => {
+  const nextPage = page + 1
+  // API 주소를 /chatbot으로 변경
+  const res = await fetch(`${API_BASE}/chatbot?page=${nextPage}&keyword=${encodeURIComponent(keyword)}`)
+  const data = await res.json()
+  
+  setList(data)
+  setPage(nextPage)
+}
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
+    <div className="container">
+      <h1>법률 QnA</h1>
+
+      <div className="search-box">
+        <input
+          value={keyword}
+          onChange={(e) => setKeyword(e.target.value)}
+          placeholder="질문 키워드 검색"
+        />
+        <button className="btn-search" onClick={handleSearch}>검색</button>
+      </div>
+
+      <ul className="qna-list">
+        {list.length === 0 ? (
+          <li className="empty">검색 결과가 없습니다</li>
+        ) : (
+          list.map((item) => (
+            <li key={item.seq} className="qna-item">
+              <span className="qna-seq">{item.seq}</span>
+              <span className="qna-question">{item.question}</span>
+            </li>
+          ))
+        )}
+      </ul>
+
+      <div className="pagination">
+        <button className="btn-next" onClick={handleNext}>
+          다음 →
         </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      </div>
+    </div>
   )
 }
 

@@ -23,6 +23,9 @@ dependencies = [
     # --- Server ---
     "fastapi>=0.139.2",
     "uvicorn[standard]>=0.51.0",
+    # --- DB ---
+    "oracledb>=4.0.1",
+    "sqlalchemy>=2.0.51",
     # --- Misc ---
     "python-jose[cryptography]>=3.4.0",
     "python-dotenv>=1.1.0",
