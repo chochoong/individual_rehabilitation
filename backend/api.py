@@ -2,7 +2,13 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from database import get_db
+<<<<<<< Updated upstream
+from schema import LawQnaResponse, LawQnaUpdate , ChatRequest , ChatResponse
+from project_kwon.generate_answer import generate_answer
+=======
 from schema import LawQnaResponse, LawQnaUpdate 
+from schema import Applicant
+>>>>>>> Stashed changes
 
 router = APIRouter()
 
@@ -51,3 +57,25 @@ def search_lawqna(keyword: str, db: Session = Depends(get_db)):
         {"keyword": keyword},
     ).all()
     return [row_to_dict(row) for row in rows]
+
+@router.post("/qna/chat", response_model=ChatResponse)
+def chat(request: ChatRequest):
+    # 프론트에서 온 [{role, content}, ...] 형태를 [{user, assistant}, ...]로 변환
+    converted_history = []
+    pending_user = None
+    for item in request.history:
+        if item.role == "user":
+            pending_user = item.content
+        elif item.role == "assistant" and pending_user is not None:
+            converted_history.append({"user": pending_user, "assistant": item.content})
+            pending_user = None
+
+    answer = generate_answer(request.question, converted_history)
+    return {"answer": answer}
+
+@router.post("/input")
+def create_input(applicant: Applicant):
+    return {
+        "message": "입력 완료",
+        "data": applicant
+    }

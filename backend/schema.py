@@ -1,6 +1,10 @@
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
+from input_service.basic_info import BasicInfo
+from input_service.income_info import IncomeExpenseInfo
+from input_service.asset_info import AssetInfo
+from input_service.debt_info import DebtInfo
 
 
 # 질문 등록 시 요청 (question만 받고 answer는 나중에 채워지는 경우)
@@ -29,3 +33,20 @@ class LawQnaResponse(BaseModel):
     class Config:
         from_attributes = True   # SQLAlchemy 모델 -> Pydantic 변환 허용 (v2 기준)
         # pydantic v1이면 orm_mode = True 로 사용
+
+class HistoryItem(BaseModel):
+    role: str
+    content: str
+
+class ChatRequest(BaseModel):
+    question: str
+    history: list[HistoryItem] = []
+
+class ChatResponse(BaseModel):
+    answer: str
+# 개인회생 신청자 정보
+class Applicant(BaseModel):
+    basic_info: BasicInfo
+    income_info: IncomeExpenseInfo
+    asset_info: AssetInfo
+    debt_info: DebtInfo        
