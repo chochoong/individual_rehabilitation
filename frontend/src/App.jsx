@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import './App.css'
+import ChatBot from './ChatBot/ChatBot.jsx'
 
 const API_BASE = "http://127.0.0.1:8701"
 
@@ -7,6 +8,7 @@ function App() {
   const [list, setList] = useState([])
   const [keyword, setKeyword] = useState("")
   const [page, setPage] = useState(1)
+  const [showChatBot, setShowChatBot] = useState(false)  // 추가: 챗봇 화면 표시 여부
 
   useEffect(() => {
     loadList()
@@ -18,31 +20,21 @@ function App() {
     setList(data)
   }
 
-const handleSearch = async () => {
-  console.log("1. 검색 시작! 키워드:", keyword);
-  try {
-  const trimmedKeyword = keyword.trim()  // 공백 제거
-  const res = await fetch(`${API_BASE}/lawqna/search?keyword=${encodeURIComponent(trimmedKeyword)}`)
-    console.log("2. 응답 상태코드:", res.status);
-    
-    const data = await res.json();
-    console.log("3. 받아온 데이터:", data);
-    
-    setList(data);
-  } catch (err) {
-    console.error("4. 통신/파싱 에러 발생:", err);
+  const handleSearch = async () => {
+    const trimmedKeyword = keyword.trim()
+    const res = await fetch(`${API_BASE}/lawqna/search?keyword=${encodeURIComponent(trimmedKeyword)}`)
+    const data = await res.json()
+    setList(data)
   }
-}
 
-const handleNext = async () => {
-  const nextPage = page + 1
-  // API 주소를 /chatbot으로 변경
-  const res = await fetch(`${API_BASE}/chatbot?page=${nextPage}&keyword=${encodeURIComponent(keyword)}`)
-  const data = await res.json()
-  
-  setList(data)
-  setPage(nextPage)
-}
+  const handleNext = () => {
+    setShowChatBot(true)  // "다음" 버튼 누르면 챗봇 화면으로 전환
+  }
+
+  // 챗봇 화면을 보여줘야 하면, ChatBot 컴포넌트만 렌더링
+  if (showChatBot) {
+    return <ChatBot />
+  }
 
   return (
     <div className="container">

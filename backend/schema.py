@@ -29,3 +29,14 @@ class LawQnaResponse(BaseModel):
     class Config:
         from_attributes = True   # SQLAlchemy 모델 -> Pydantic 변환 허용 (v2 기준)
         # pydantic v1이면 orm_mode = True 로 사용
+
+class HistoryItem(BaseModel):
+    role: str
+    content: str
+
+class ChatRequest(BaseModel):
+    question: str
+    history: list[HistoryItem] = []
+
+class ChatResponse(BaseModel):
+    answer: str
