@@ -2,8 +2,13 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from database import get_db
+<<<<<<< Updated upstream
 from schema import LawQnaResponse, LawQnaUpdate , ChatRequest , ChatResponse
 from project_kwon.generate_answer import generate_answer
+=======
+from schema import LawQnaResponse, LawQnaUpdate 
+from schema import Applicant
+>>>>>>> Stashed changes
 
 router = APIRouter()
 
@@ -67,3 +72,10 @@ def chat(request: ChatRequest):
 
     answer = generate_answer(request.question, converted_history)
     return {"answer": answer}
+
+@router.post("/input")
+def create_input(applicant: Applicant):
+    return {
+        "message": "입력 완료",
+        "data": applicant
+    }
