@@ -2,13 +2,10 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from database import get_db
-<<<<<<< Updated upstream
 from schema import LawQnaResponse, LawQnaUpdate , ChatRequest , ChatResponse
 from project_kwon.generate_answer import generate_answer
-=======
 from schema import LawQnaResponse, LawQnaUpdate 
 from schema import Applicant
->>>>>>> Stashed changes
 
 router = APIRouter()
 
