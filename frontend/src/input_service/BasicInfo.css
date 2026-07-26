@@ -1,0 +1,56 @@
+
+
+.basic-container{
+
+    width:80%;
+    margin:auto;
+
+}
+
+.description{
+
+    color:gray;
+    margin-bottom:30px;
+
+}
+
+.form-group{
+
+    margin-bottom:25px;
+
+}
+
+.form-group label{
+
+    font-weight:bold;
+
+    display:block;
+
+    margin-bottom:8px;
+
+}
+
+.form-group input[type=text],
+.form-group input[type=number]{
+
+    width:100%;
+
+    padding:10px;
+
+    border-radius:8px;
+
+    border:1px solid #ccc;
+
+    font-size:16px;
+
+}
+
+.checkbox-group{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+}
