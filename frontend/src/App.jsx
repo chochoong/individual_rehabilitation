@@ -1,14 +1,16 @@
+// App.jsx
 import { useState, useEffect } from 'react'
+import AppCase from './rehabilitation_case/AppCase' // 1. AppCase 불러오기
 import './App.css'
-import ChatBot from './ChatBot/ChatBot.jsx'
 
 const API_BASE = "http://127.0.0.1:8701"
 
 function App() {
   const [list, setList] = useState([])
   const [keyword, setKeyword] = useState("")
-  const [page, setPage] = useState(1)
-  const [showChatBot, setShowChatBot] = useState(false)  // 추가: 챗봇 화면 표시 여부
+  
+  // 2. 현재 화면이 qna인지 case인지 구분하는 상태 값
+  const [view, setView] = useState("qna") 
 
   useEffect(() => {
     loadList()
@@ -27,15 +29,17 @@ function App() {
     setList(data)
   }
 
+  // 3. "다음" 버튼 클릭 시 화면 상태만 'case'로 전환! (API 호출 X)
   const handleNext = () => {
-    setShowChatBot(true)  // "다음" 버튼 누르면 챗봇 화면으로 전환
+    setView("case")
   }
 
-  // 챗봇 화면을 보여줘야 하면, ChatBot 컴포넌트만 렌더링
-  if (showChatBot) {
-    return <ChatBot />
+  // 4. view가 'case'라면 사례 검색 컴포넌트만 출력
+  if (view === "case") {
+    return <AppCase onBack={() => setView("qna")} />
   }
 
+  // view가 'qna'일 때는 기존 화면 출력
   return (
     <div className="container">
       <h1>법률 QnA</h1>

@@ -2,8 +2,14 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from database import get_db
-from schema import LawQnaResponse, LawQnaUpdate , ChatRequest , ChatResponse
+from schema import LawQnaResponse, LawQnaUpdate , ChatRequest , ChatResponse ,SearchRequest
 from project_kwon.generate_answer import generate_answer
+<<<<<<< Updated upstream
+from schema import LawQnaResponse, LawQnaUpdate 
+from schema import Applicant
+=======
+from rehabilitation_case.case import run, retriever  
+>>>>>>> Stashed changes
 
 router = APIRouter()
 
@@ -67,3 +73,24 @@ def chat(request: ChatRequest):
 
     answer = generate_answer(request.question, converted_history)
     return {"answer": answer}
+
+@router.post("/input")
+def create_input(applicant: Applicant):
+    return {
+        "message": "입력 완료",
+        "data": applicant
+    }
+
+@router.post("/casesearch")
+def search_case(req: SearchRequest):
+    docs = retriever.invoke(req.question)
+    cases = [doc.page_content for doc in docs[:3]]  # 상위 3개만
+    return {"cases": cases}
+
+# @router.post("/casesearch")
+# def search_case(req: SearchRequest):
+#     docs = retriever.invoke(req.question)
+#     cases = [doc.page_content for doc in docs[:3]]
+#     return {"cases": cases}
+
+
