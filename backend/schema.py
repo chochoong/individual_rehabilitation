@@ -50,3 +50,6 @@ class Applicant(BaseModel):
     income_info: IncomeExpenseInfo
     asset_info: AssetInfo
     debt_info: DebtInfo        
+    
+class SearchRequest(BaseModel):
+    question: str    
