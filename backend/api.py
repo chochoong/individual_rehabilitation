@@ -33,6 +33,7 @@ def format_money(value):
     if value is None or value == "":
         return ""
       
+    
     # 문자열인 경우 콤마 제거
     if isinstance(value, str):
         value = value.replace(",", "").strip()

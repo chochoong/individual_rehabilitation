@@ -9,6 +9,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5191",
         "http://127.0.0.1:5191",
+        "*"  # 개발 단계에서는 전체 허용으로 테스트
     ],
     allow_credentials=True,
     allow_methods=["*"],
