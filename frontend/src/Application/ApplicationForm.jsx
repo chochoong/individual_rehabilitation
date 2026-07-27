@@ -227,7 +227,7 @@ export default function ApplicationForm({ onSubmit, onSaveDraft, onPrev }) {
               />
             </div>
             <div className="form-group">
-              <label>월 소득 (만원)<span className="required-star">*</span></label>
+              <label>월 소득<span className="required-star">*</span></label>
               <input
                 type="text"
                 name="monthlyIncome"
@@ -276,7 +276,7 @@ export default function ApplicationForm({ onSubmit, onSaveDraft, onPrev }) {
               />
             </div>
             <div className="form-group">
-              <label>부동산 시세 (만원)</label>
+              <label>부동산 시세</label>
               <input
                 type="text"
                 name="realEstatePrice"
@@ -286,7 +286,7 @@ export default function ApplicationForm({ onSubmit, onSaveDraft, onPrev }) {
               />
             </div>
             <div className="form-group">
-              <label>담보대출 (만원)</label>
+              <label>담보대출</label>
               <input
                 type="text"
                 name="mortgage"
@@ -335,7 +335,7 @@ export default function ApplicationForm({ onSubmit, onSaveDraft, onPrev }) {
           </div>
           <div className="form-grid">
             <div className="form-group">
-              <label>신용채무 (만원)<span className="required-star">*</span></label>
+              <label>신용채무<span className="required-star">*</span></label>
               <input
                 type="text"
                 name="creditDebt"
@@ -345,7 +345,7 @@ export default function ApplicationForm({ onSubmit, onSaveDraft, onPrev }) {
               />
             </div>
             <div className="form-group">
-              <label>담보채무 (만원)</label>
+              <label>담보채무</label>
               <input
                 type="text"
                 name="securedDebt"
@@ -355,7 +355,7 @@ export default function ApplicationForm({ onSubmit, onSaveDraft, onPrev }) {
               />
             </div>
             <div className="form-group">
-              <label>우선 변제 채무 (만원)</label>
+              <label>우선 변제 채무</label>
               <input
                 type="text"
                 name="priorityDebt"

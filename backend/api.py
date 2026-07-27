@@ -29,22 +29,18 @@ def parse_int(val):
         return 0
     
 def format_money(value):
-    """숫자(원 단위, 콤마 포함 문자열도 허용)를 '만원' 단위 문자열로 변환."""
+    """숫자(원 단위)를 '만원' 단위 문자열로 변환. 예: 5000000 -> '500만원'"""
     if value is None or value == "":
         return ""
-      
-    
-    # 문자열인 경우 콤마 제거
     if isinstance(value, str):
         value = value.replace(",", "").strip()
-    
     try:
         value = int(value)
     except (ValueError, TypeError):
         return str(value)
     
-    man = value // 10000
-    return f"{man:,}만원"    
+    man = value // 10000  # 원 → 만원 단위로 변환
+    return f"{man:,}만원"   
     
 #Qna 전체조회 20개만
 @router.get("/lawqna", response_model=list[LawQnaResponse])
@@ -94,17 +90,16 @@ def chat(request: ChatRequest):
     return {"answer": answer}
 
 
-@router.post("/casesearch")
-def search_case(req: SearchRequest):
-    docs = retriever.invoke(req.question)
-    cases = [doc.page_content for doc in docs[:3]]  # 상위 3개만
-    return {"cases": cases}
-
 # @router.post("/casesearch")
 # def search_case(req: SearchRequest):
 #     docs = retriever.invoke(req.question)
-#     cases = [doc.page_content for doc in docs[:3]]
+#     cases = [doc.page_content for doc in docs[:3]]  # 상위 3개만
 #     return {"cases": cases}
+
+@router.post("/casesearch")
+def search_case(req: SearchRequest):
+    answer_text = run(req.question, retriever)  # run()을 호출 → LLM이 3개 사례 선정 + 원문 그대로 반환
+    return {"cases": answer_text}
 
 
 @router.post("/application")
@@ -217,10 +212,10 @@ def get_latest_application_summary(db: Session = Depends(get_db)):
     
      # 사례 검색(VectorDB / Retriever)에 전달하기 좋은 자연스러운 텍스트 프롬프트 구성
     parts = []
+    if data["monthly_income"]: parts.append(f"월소득: {format_money(data['monthly_income'])}")
     if data["region"]: parts.append(f"거주지: {data['region']}")
     if data["job"]: parts.append(f"직업: {data['job']}")
     if data["work_period"]: parts.append(f"근무기간: {data['work_period']}")
-    if data["monthly_income"]: parts.append(f"월소득: {format_money(data['monthly_income'])}")
     if data["dependents"]: parts.append(f"부양가족: {data['dependents']}명")
     if data["credit_debt"]: parts.append(f"신용채무: {format_money(data['credit_debt'])}")
     if data["secured_debt"]: parts.append(f"담보채무: {format_money(data['secured_debt'])}")

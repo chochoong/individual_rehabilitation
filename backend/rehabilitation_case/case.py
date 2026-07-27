@@ -13,6 +13,27 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+def parse_korean_money(text):
+    """'1억 2천만', '5천5백만' 같은 한글 금액 문자열을 만원 단위 숫자로 변환"""
+    if not text:
+        return 0
+
+    total = 0
+    eok = re.search(r"([0-9]+)\s*억", text)
+    cheon = re.search(r"([0-9]+)\s*천", text)
+    baek = re.search(r"([0-9]+)\s*백", text)
+    man = re.search(r"([0-9,]+)\s*만", text)
+
+    if eok:
+        total += int(eok.group(1)) * 10000
+    if cheon:
+        total += int(cheon.group(1)) * 1000
+    if baek:
+        total += int(baek.group(1)) * 100
+    if man and not cheon and not baek:
+        total += int(man.group(1).replace(",", ""))
+
+    return total
 
 def parse_case(file_path: str):
     loader = Docx2txtLoader(file_path)
@@ -28,7 +49,7 @@ def parse_case(file_path: str):
 
         income = re.search(r"월 소득[:\s]*([0-9]+)", case)
         payment = re.search(r"월 변제금[:\s]*([0-9]+)", case)
-        debt = re.search(r"채무 변동[:\s]*([0-9억천백만\s]+)", case)
+        debt_match = re.search(r"채무 변동[:\s]*([0-9억천백만\s]+)", case)
         job = re.search(r"인적사항.*?/\s*([^/\n]+)\s*/", case)
 
         documents.append(
@@ -37,7 +58,7 @@ def parse_case(file_path: str):
                 metadata={
                     "income": int(income.group(1)) if income else 0,
                     "payment": int(payment.group(1)) if payment else 0,
-                    "debt": debt.group(1) if debt else "",
+                    "debt": parse_korean_money(debt_match.group(1)) if debt_match else 0,  # ← 숫자로 변환
                     "job": job.group(1).strip() if job else "",
                 },
             )
@@ -88,15 +109,22 @@ class HybridRetriever:
         self.vectorstore = vectorstore
 
     def extract(self, question):
-        income = re.search(r"월 소득[: ]*([0-9]+)", question)
-        payment = re.search(r"월 변제금[: ]*([0-9]+)", question)
+        income = re.search(r"월\s*소득[:\s]*([0-9,]+)", question)
+        payment = re.search(r"월\s*변제금[:\s]*([0-9,]+)", question)
+        debt = re.search(r"채무\s*(?:총액|변동)?[:\s]*([0-9,]+)", question)
         return {
-            "income": int(income.group(1)) if income else 0,
-            "payment": int(payment.group(1)) if payment else 0,
-        }
+            "income": int(income.group(1).replace(",", "")) if income else 0,
+            "payment": int(payment.group(1).replace(",", "")) if payment else 0,
+            "debt": int(debt.group(1).replace(",", "")) if debt else 0,
+        }    
 
-    def similarity(self, a, b, max_diff):
-        return max(0, 1 - abs(a - b) / max_diff)
+    def similarity(self, a, b):
+        """상대 오차 기반 유사도 (0~1). 값이 클수록 유사"""
+        if a == 0 and b == 0:
+            return 1
+        denom = max(a, b, 1)  # 0으로 나누기 방지
+        diff_ratio = abs(a - b) / denom
+        return max(0, 1 - diff_ratio)
 
     def invoke(self, question):
         user = self.extract(question)
@@ -105,13 +133,16 @@ class HybridRetriever:
         reranked = []
         for doc, distance in results:
             embedding_score = 1 - distance
-            income_score = self.similarity(user["income"], doc.metadata["income"], 200)
-            payment_score = self.similarity(user["payment"], doc.metadata["payment"], 100)
+
+            income_score = self.similarity(user["income"], doc.metadata.get("income", 0))
+            debt_score = self.similarity(user["debt"], doc.metadata.get("debt", 0))
+            payment_score = self.similarity(user["payment"], doc.metadata.get("payment", 0))
 
             final_score = (
-                embedding_score * 0.4
-                + income_score * 0.4
+                income_score * 0.4
+                + debt_score * 0.3
                 + payment_score * 0.2
+                + embedding_score * 0.1
             )
             reranked.append({"score": final_score, "doc": doc})
 
@@ -165,36 +196,47 @@ prompt = ChatPromptTemplate.from_template(
 
 사용자의 상황과 [검색된 사례]들을 비교하여 가장 유사한 사례 3개를 선정해 주세요.
 
-유사도 비교 시 아래 요소의 **우선순위(가중치 비중)**를 차등 적용하여 종합 평가하세요:
-- 1순위 (최우선 반영): **월 소득**
-- 2순위 (높은 반영): **채무 총액**
-- 3순위 (중간 반영): **월 변제금**
-- 4순위 (보조 반영): **직업**
-- 5순위 (참고 반영): **회생 사유**
+유사도 비교 시 아래 요소의 우선순위(가중치 비중)를 차등 적용하여 종합 평가하세요:
+- 1순위 (최우선 반영): 월 소득
+- 2순위 (높은 반영): 채무 총액
+- 3순위 (중간 반영): 월 변제금
+- 4순위 (보조 반영): 직업
+- 5순위 (참고 반영): 회생 사유
 
 [분석 가이드라인]
 1. 1순위(월 소득)와 2순위(채무)가 사용자 상황과 가장 가깝게 일치하는 사례에 높은 유사도 점수를 부여하세요.
 2. 3~5순위 조건은 상위 조건이 비슷할 때 후순위 비교 요소로 활용하세요.
-3. 가장 높은 유사도 점수를 받은 **상위 3개 사례**를 선정하세요.
+3. 가장 높은 유사도 점수를 받은 상위 3개 사례를 선정하세요.
 
 [출력 형식]
-선택한 3개 사례의 **원문 그대로** 출력하세요. (추가 설명이나 요약 없이 원문 유지)
+선택한 3개 사례의 원문 그대로 출력하세요. (추가 설명이나 요약 없이 원문 유지)
 """
 )
 
 llm = ChatOpenAI(model="gpt-4.1-mini", temperature=0)
 
 
-def run(question, retriever):
-    # 1. 유사 사례 검색
-    docs = retriever.invoke(question)
-    context = "\n\n".join(doc.page_content for doc in docs)
+# def run(question, retriever):
+#     # 1. 유사 사례 검색
+#     docs = retriever.invoke(question)
+#     context = "\n\n".join(doc.page_content for doc in docs)
 
-    # 2. Prompt + LLM + OutputParser 체인 생성 및 실행
-    chain = prompt | llm | StrOutputParser()
-    print("===============유사 사례 검색==============",context)
-    # 3. GPT가 분석해준 '최종 답변'을 반환
-    return chain.invoke({"context": context, "question": question})
+#     # 2. Prompt + LLM + OutputParser 체인 생성 및 실행
+#     chain = prompt | llm | StrOutputParser()
+#     print("===============유사 사례 검색==============",context)
+#     # 3. GPT가 분석해준 '최종 답변'을 반환
+#     return chain.invoke({"context": context, "question": question})
+
+def run(question, retriever):
+    # LLM 호출 없이, retriever의 가중치 기반 로직으로 상위 3개를 그대로 반환
+    docs = retriever.invoke(question)
+    cases = [doc.page_content for doc in docs]
+
+    print("===============유사 사례 검색(LLM 미사용)==============")
+    for i, c in enumerate(cases, 1):
+        print(f"--- {i}번째 사례 ---\n{c[:200]}...\n")
+
+    return cases  # 원본 텍스트 그대로, 배열로 반환
 
 # def run(question, retriever):
 #     docs = retriever.invoke(question)
