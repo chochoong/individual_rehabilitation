@@ -1,5 +1,9 @@
 from pydantic import BaseModel
+<<<<<<< HEAD
 from typing import List, Optional
+=======
+from typing import Optional, Dict, Any
+>>>>>>> develop
 from datetime import datetime
 from input_service.basic_info import BasicInfo
 from input_service.income_info import IncomeExpenseInfo
@@ -72,3 +76,34 @@ class Applicant(BaseModel):
     debt_causes: List[str]
 
          
+    basic_info: BasicInfo
+    income_info: IncomeExpenseInfo
+    asset_info: AssetInfo
+    debt_info: DebtInfo        
+    
+class SearchRequest(BaseModel):
+    question: str 
+    
+
+class ApplicationFormRequest(BaseModel):
+    name: Optional[str] = ""
+    region: Optional[str] = ""
+    dependents: Optional[Any] = 0  # 문자열 "" 이나 None이 넘어와도 에러 안 나도록 처리
+    hasHistory: Optional[bool] = False
+
+    job: Optional[str] = ""
+    workPeriod: Optional[str] = ""
+    monthlyIncome: Optional[str] = ""
+    expenses: Optional[Dict[str, bool]] = {}
+
+    realEstate: Optional[str] = ""
+    realEstatePrice: Optional[str] = ""
+    mortgage: Optional[str] = ""
+    car: Optional[str] = ""
+    financeAssets: Optional[Dict[str, bool]] = {}
+
+    creditDebt: Optional[str] = ""
+    securedDebt: Optional[str] = ""
+    priorityDebt: Optional[str] = ""
+    debtReasons: Optional[Dict[str, bool]] = {}    
+    
