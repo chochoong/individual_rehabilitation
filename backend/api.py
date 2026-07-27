@@ -232,3 +232,8 @@ def get_latest_application_summary(db: Session = Depends(get_db)):
     query_text = " / ".join(parts)
 
     return {"query_text": query_text, "raw_data": data}   
+
+
+@router.post("/repayment", response_model=RepaymentCalculationResponse)
+def repayment_calculation(request: RepaymentCalculationRequest) -> RepaymentCalculationResponse:
+    return calculate_repayment(request.case)
