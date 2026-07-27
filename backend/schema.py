@@ -1,9 +1,5 @@
 from pydantic import BaseModel
-<<<<<<< HEAD
-from typing import List, Optional
-=======
-from typing import Optional, Dict, Any
->>>>>>> develop
+from typing import List,Optional, Dict, Any
 from datetime import datetime
 from input_service.basic_info import BasicInfo
 from input_service.income_info import IncomeExpenseInfo
