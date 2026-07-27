@@ -20,9 +20,45 @@ function BasicInfo({ data, onChange, onNext }) {
                 <input
                     type="text"
                     placeholder="예) 홍길동"
-                    value={data.name}
+                    value={data.name || ""}
                     onChange={(e) => onChange("name", e.target.value)}
                 />
+            </div>
+
+            <div className="form-group">
+                <label>생년월일</label>
+                <input
+                    type="date"
+                    value={data.birthdate || ""}
+                    onChange={(e) => onChange("birthdate", e.target.value)}
+                />
+            </div>
+
+            <div className="form-group">
+                <label>성별</label>
+                <div className="radio-group">
+                    <label className="radio-inline">
+                        <input
+                            type="radio"
+                            name="gender"
+                            value="male"
+                            checked={data.gender === "male"}
+                            onChange={(e) => onChange("gender", e.target.value)}
+                        />
+                        남자
+                    </label>
+                    <label className="radio-inline">
+                        <input
+                            type="radio"
+                            name="gender"
+                            value="female"
+                            checked={data.gender === "female"}
+                            onChange={(e) => onChange("gender", e.target.value)}
+                        />
+                        여자
+                    </label>
+                    
+                </div>
             </div>
 
             <div className="form-group">
@@ -31,7 +67,7 @@ function BasicInfo({ data, onChange, onNext }) {
                 <input
                     type="text"
                     placeholder="예) 광주광역시 북구"
-                    value={data.region}
+                    value={data.region || ""}
                     onChange={(e) => onChange("region", e.target.value)}
                 />
             </div>
@@ -42,9 +78,9 @@ function BasicInfo({ data, onChange, onNext }) {
                 <input
                     type="number"
                     placeholder="0"
-                    value={data.dependents}
+                    value={data.dependents ?? ""}
                     onChange={(e) =>
-                        onChange("dependents", Number(e.target.value))
+                        onChange("dependents", e.target.value === "" ? "" : Number(e.target.value))
                     }
                 />
             </div>
@@ -55,7 +91,7 @@ function BasicInfo({ data, onChange, onNext }) {
                 <div className="checkbox-group">
                     <input
                         type="checkbox"
-                        checked={data.has_rehab_history}
+                        checked={!!data.has_rehab_history}
                         onChange={(e) =>
                             onChange("has_rehab_history", e.target.checked)
                         }

@@ -10,7 +10,7 @@ import "./InputPage.css";
 const API_URL = "http://localhost:8701/input";
 const STORAGE_KEY = "input_page_temp_data";
 
-function InputPage() {
+function InputPage({ onPrev, onComplete }) {
 
   const [step, setStep] = useState(1);
 
@@ -186,31 +186,34 @@ function InputPage() {
       payload.debt_cause_description = formData.debt_cause_description || "";
 
       const res = await fetch(API_URL, {
-
         method: "POST",
-
         headers: {
           "Content-Type": "application/json",
         },
-
         body: JSON.stringify(payload),
-
       });
 
-      if (!res.ok) throw new Error("서버 오류");
+      let result;
+      try {
+        result = await res.json();
+      } catch (e) {
+        result = null;
+      }
 
-      await res.json();
+      const hasError = !res.ok || (result && result.status === "error");
+      if (hasError) {
+        const message = result?.message || res.statusText || "서버 오류";
+        throw new Error(message);
+      }
 
       alert("제출 완료!");
-
       localStorage.removeItem(STORAGE_KEY);
+      return true;
 
     } catch (err) {
-
       console.error(err);
-
-      alert("제출 실패");
-
+      alert(`제출 실패: ${err.message}`);
+      return false;
     }
 
   };
@@ -241,7 +244,10 @@ function InputPage() {
 
   const handleFinalSubmit = async () => {
     if (isStepComplete(4)) markStepCompleted(4);
-    await handleSubmit();
+    const success = await handleSubmit();
+    if (success && typeof onComplete === "function") {
+      onComplete();
+    }
   };
 
   const isStepComplete = (id) => {
@@ -281,9 +287,16 @@ function InputPage() {
       }
 
       if (id === 4) {
+        const creditTotal = (Array.isArray(data.credit_debt_items) ? data.credit_debt_items : [])
+          .reduce((sum, item) => sum + Number(item.amount || 0), 0);
+        const securedTotal = (Array.isArray(data.secured_debt_items) ? data.secured_debt_items : [])
+          .reduce((sum, item) => sum + Number(item.amount || 0), 0);
+        const priorityTotal = (Array.isArray(data.priority_debt_items) ? data.priority_debt_items : [])
+          .reduce((sum, item) => sum + Number(item.amount || 0), 0);
         return (
-          (Number(data.credit_debt) > 0) ||
-          (Number(data.secured_debt) > 0) ||
+          creditTotal > 0 ||
+          securedTotal > 0 ||
+          priorityTotal > 0 ||
           (Array.isArray(data.debt_causes) && data.debt_causes.length > 0)
         );
       }

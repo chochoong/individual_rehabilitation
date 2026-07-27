@@ -1,5 +1,17 @@
 import "./IncomeInfo.css";
 
+const formatMoney = (value) => {
+    if (value === undefined || value === null || value === "") return "";
+    const number = Number(value);
+    if (Number.isNaN(number)) return "";
+    return number.toLocaleString();
+};
+
+const parseMoney = (value) => {
+    const numeric = String(value).replace(/,/g, "").replace(/[^0-9]/g, "");
+    return numeric === "" ? 0 : Number(numeric);
+};
+
 function IncomeInfo({
     data,
     onChange,
@@ -49,17 +61,22 @@ function IncomeInfo({
             <div className="form-group">
                 <label>월 소득</label>
 
-                <input
-                    type="number"
-                    placeholder="예) 2500000"
-                    value={data.monthly_income}
-                    onChange={(e) =>
-                        onChange(
-                            "monthly_income",
-                            Number(e.target.value)
-                        )
-                    }
-                />
+                <div className="money-input-row">
+                    <input
+                        type="text"
+                        placeholder="예) 2,500,000"
+                        value={data.monthly_income ? formatMoney(data.monthly_income) : ""}
+                        onChange={(e) =>
+                            onChange(
+                                "monthly_income",
+                                parseMoney(e.target.value)
+                            )
+                        }
+                    />
+                    <span className="amount-preview">
+                        {data.monthly_income ? `${formatMoney(data.monthly_income)}원` : ""}
+                    </span>
+                </div>
             </div>
 
             <div className="form-group">
@@ -108,18 +125,26 @@ function IncomeInfo({
                                 }}
                             />
                             <label>금액</label>
-                            <input
-                                type="number"
-                                placeholder="예) 200000"
-                                value={item.amount || ""}
-                                onChange={(e) => {
-                                    const next = Array.isArray(data.living_expenses)
-                                        ? data.living_expenses.slice()
-                                        : [{ name: "", amount: 0 }];
-                                    next[idx] = { ...(next[idx] || {}), amount: Number(e.target.value) };
-                                    onChange("living_expenses", next);
-                                }}
-                            />
+                            <div className="money-input-row">
+                                <input
+                                    type="text"
+                                    placeholder="예) 200,000"
+                                    value={item.amount ? formatMoney(item.amount) : ""}
+                                    onChange={(e) => {
+                                        const next = Array.isArray(data.living_expenses)
+                                            ? data.living_expenses.slice()
+                                            : [{ name: "", amount: 0 }];
+                                        next[idx] = {
+                                            ...(next[idx] || {}),
+                                            amount: parseMoney(e.target.value),
+                                        };
+                                        onChange("living_expenses", next);
+                                    }}
+                                />
+                                <span className="amount-preview">
+                                    {item.amount ? `${formatMoney(item.amount)}원` : ""}
+                                </span>
+                            </div>
                         </div>
                     ))}
                 </div>

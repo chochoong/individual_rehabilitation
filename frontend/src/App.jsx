@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import AppCase from './rehabilitation_case/AppCase' 
 import ChatBot from './ChatBot/ChatBot' 
-import ApplicationForm from './Application/ApplicationForm' 
+import InputPage from './input_service/InputPage.jsx'
 import './App.css'
 
 const API_BASE = "http://localhost:8701"; 
@@ -52,39 +52,9 @@ function App() {
   // 2단계: 신청서 작성 화면
  if (view === "form") {
     return (
-      <ApplicationForm
+      <InputPage
         onPrev={() => setView("qna")}
-        onSubmit={async (formData) => {
-          if (isSubmitting) return; // 이미 제출 중이면 중복 실행 방지
-          setIsSubmitting(true);
-
-          try {
-            const res = await fetch(`${API_BASE}/application`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(formData),
-            });
-
-            const result = await res.json();
-
-            if (res.ok && result.status === "success") {
-              alert("신청서 제출이 완료되었습니다.");
-              setView("case"); // ⚠️ 화면을 'case'로 전환하여 폼 제출 상태를 완전히 벗어납니다.
-            } else {
-              alert("저장 실패: " + (result.message || "오류 발생"));
-            }
-          } catch (err) {
-            console.error("제출 요청 에러:", err);
-            alert("서버 통신 실패");
-          } finally {
-            setIsSubmitting(false);
-          }
-        }}
-        onSaveDraft={(formData) => {
-          alert("임시 저장되었습니다.");
-        }}
+        onComplete={() => setView("case")}
       />
     );
   }

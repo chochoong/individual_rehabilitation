@@ -80,6 +80,7 @@ def create_vectorstore(documents):
         persist_directory=db_path,
     )
     vectorstore.add_documents(documents)
+    print(f"벡터 저장 완료: 총 {len(documents)}개 문서")
     return vectorstore
 
 

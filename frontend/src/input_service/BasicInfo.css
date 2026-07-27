@@ -1,3 +1,99 @@
+/* BasicInfo.css: 폼 레이아웃과 라디오/체크박스 중앙 정렬 스타일 */
+.basic-container {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 30px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.basic-container h2 {
+  margin-bottom: 10px;
+  color: #2d3748;
+  text-align: center;
+}
+
+.description {
+  color: #718096;
+  margin-bottom: 20px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 8px;
+  text-align: center;
+  color: #2d3748;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group input[type="date"] {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+.form-group input[type="date"] {
+  padding: 10px 12px;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #3182ce;
+}
+
+.radio-group {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  justify-content: center;
+}
+
+.radio-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.checkbox-group {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.button-group {
+  display: flex;
+  justify-content: center;
+  margin-top: 22px;
+}
+
+.next-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: bold;
+  background: #3182ce;
+  color: white;
+}
+
+.next-btn:hover {
+  background: #2b6cb0;
+}
 
 
 .basic-container {

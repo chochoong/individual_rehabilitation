@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from database import get_db
-from schema import LawQnaResponse, LawQnaUpdate , ChatRequest , ChatResponse ,SearchRequest ,ApplicationFormRequest
+import json
+from schema import LawQnaResponse, LawQnaUpdate , ChatRequest , ChatResponse ,SearchRequest ,ApplicationFormRequest, Applicant
 from project_kwon.generate_answer import generate_answer
 from rehabilitation_case.case import run, retriever  
 
@@ -171,6 +172,48 @@ def create_application(req: ApplicationFormRequest, db: Session = Depends(get_db
     except Exception as e:
         db.rollback()
         print("신청서 저장 중 에러 발생:", str(e))
+        return {"status": "error", "message": str(e)}
+
+
+@router.post("/input")
+def create_input(applicant: Applicant, db: Session = Depends(get_db)):
+    try:
+        record = ApplicantModel(
+            name=applicant.name,
+            region=applicant.region,
+            dependents=applicant.dependents,
+            has_rehab_history=applicant.has_rehab_history,
+            job=applicant.job,
+            work_period=applicant.work_period,
+            monthly_income=applicant.monthly_income,
+            living_expenses_json=json.dumps(applicant.living_expenses, ensure_ascii=False),
+            real_estate=applicant.real_estate,
+            real_estate_price=applicant.real_estate_price,
+            mortgage_loan=applicant.mortgage_loan,
+            car=applicant.car,
+            financial_assets_json=json.dumps([{
+                "name": fa.name,
+                "amount": fa.amount,
+            } for fa in applicant.financial_assets], ensure_ascii=False),
+            credit_debt=applicant.credit_debt,
+            secured_debt=applicant.secured_debt,
+            priority_debt=applicant.priority_debt,
+            debt_causes_json=json.dumps(applicant.debt_causes, ensure_ascii=False),
+        )
+
+        db.add(record)
+        db.commit()
+        db.refresh(record)
+
+        return {
+            "status": "success",
+            "message": "입력 완료",
+            "applicant_id": record.id,
+            "data": applicant,
+        }
+    except Exception as e:
+        db.rollback()
+        print("입력 저장 중 에러 발생:", str(e))
         return {"status": "error", "message": str(e)}
     
     

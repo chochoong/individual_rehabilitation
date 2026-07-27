@@ -1,5 +1,17 @@
 import "./AssetInfo.css";
 
+const formatMoney = (value) => {
+    if (value === undefined || value === null || value === "") return "";
+    const number = Number(value);
+    if (Number.isNaN(number)) return "";
+    return number.toLocaleString();
+};
+
+const parseMoney = (value) => {
+    const numeric = String(value).replace(/,/g, "").replace(/[^0-9]/g, "");
+    return numeric === "" ? 0 : Number(numeric);
+};
+
 function AssetInfo({
     data,
     onChange,
@@ -36,33 +48,43 @@ function AssetInfo({
             <div className="form-group">
                 <label>부동산 시세</label>
 
-                <input
-                    type="number"
-                    placeholder="0"
-                    value={data.real_estate_price}
-                    onChange={(e) =>
-                        onChange(
-                            "real_estate_price",
-                            Number(e.target.value)
-                        )
-                    }
-                />
+                <div className="money-input-row">
+                    <input
+                        type="text"
+                        placeholder="0"
+                        value={data.real_estate_price ? formatMoney(data.real_estate_price) : ""}
+                        onChange={(e) =>
+                            onChange(
+                                "real_estate_price",
+                                parseMoney(e.target.value)
+                            )
+                        }
+                    />
+                    <span className="amount-preview">
+                        {data.real_estate_price ? `${formatMoney(data.real_estate_price)}원` : ""}
+                    </span>
+                </div>
             </div>
 
             <div className="form-group">
                 <label>담보대출</label>
 
-                <input
-                    type="number"
-                    placeholder="0"
-                    value={data.mortgage_loan}
-                    onChange={(e) =>
-                        onChange(
-                            "mortgage_loan",
-                            Number(e.target.value)
-                        )
-                    }
-                />
+                <div className="money-input-row">
+                    <input
+                        type="text"
+                        placeholder="0"
+                        value={data.mortgage_loan ? formatMoney(data.mortgage_loan) : ""}
+                        onChange={(e) =>
+                            onChange(
+                                "mortgage_loan",
+                                parseMoney(e.target.value)
+                            )
+                        }
+                    />
+                    <span className="amount-preview">
+                        {data.mortgage_loan ? `${formatMoney(data.mortgage_loan)}원` : ""}
+                    </span>
+                </div>
             </div>
 
             <div className="form-group">
@@ -121,18 +143,26 @@ function AssetInfo({
                                 }}
                             />
                             <label>금액</label>
-                            <input
-                                type="number"
-                                placeholder="예) 1000000"
-                                value={asset?.amount || ""}
-                                onChange={(e) => {
-                                    const next = Array.isArray(data.financial_assets)
-                                        ? data.financial_assets.slice()
-                                        : [{ name: "", amount: 0 }];
-                                    next[idx] = { ...(next[idx] || { name: "", amount: 0 }), amount: Number(e.target.value) };
-                                    onChange("financial_assets", next);
-                                }}
-                            />
+                            <div className="money-input-row">
+                                <input
+                                    type="text"
+                                    placeholder="예) 1,000,000"
+                                    value={asset?.amount ? formatMoney(asset.amount) : ""}
+                                    onChange={(e) => {
+                                        const next = Array.isArray(data.financial_assets)
+                                            ? data.financial_assets.slice()
+                                            : [{ name: "", amount: 0 }];
+                                        next[idx] = {
+                                            ...(next[idx] || { name: "", amount: 0 }),
+                                            amount: parseMoney(e.target.value),
+                                        };
+                                        onChange("financial_assets", next);
+                                    }}
+                                />
+                                <span className="amount-preview">
+                                    {asset?.amount ? `${formatMoney(asset.amount)}원` : ""}
+                                </span>
+                            </div>
                         </div>
                     ))}
                 </div>

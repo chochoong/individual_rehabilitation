@@ -1,5 +1,17 @@
 import "./DebtInfo.css";
 
+const formatMoney = (value) => {
+    if (value === undefined || value === null || value === "") return "";
+    const number = Number(value);
+    if (Number.isNaN(number)) return "";
+    return number.toLocaleString();
+};
+
+const parseMoney = (value) => {
+    const numeric = String(value).replace(/,/g, "").replace(/[^0-9]/g, "");
+    return numeric === "" ? 0 : Number(numeric);
+};
+
 function DebtInfo({
     data,
     onChange,
@@ -90,16 +102,24 @@ function DebtInfo({
                                         }}
                                     />
                                     <label>금액</label>
-                                    <input
-                                        type="number"
-                                        placeholder="예) 1000000"
-                                        value={item.amount || ""}
-                                        onChange={(e) => {
-                                            const next = items.slice();
-                                            next[idx] = { ...(next[idx] || { name: "", amount: 0 }), amount: Number(e.target.value) };
-                                            onChange(group.field, next);
-                                        }}
-                                    />
+                                    <div className="money-input-row">
+                                        <input
+                                            type="text"
+                                            placeholder="예) 1,000,000"
+                                            value={item.amount ? formatMoney(item.amount) : ""}
+                                            onChange={(e) => {
+                                                const next = items.slice();
+                                                next[idx] = {
+                                                    ...(next[idx] || { name: "", amount: 0 }),
+                                                    amount: parseMoney(e.target.value),
+                                                };
+                                                onChange(group.field, next);
+                                            }}
+                                        />
+                                        <span className="amount-preview">
+                                            {item.amount ? `${formatMoney(item.amount)}원` : ""}
+                                        </span>
+                                    </div>
                                 </div>
                             ))}
                         </div>

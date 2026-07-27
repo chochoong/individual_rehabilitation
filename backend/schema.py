@@ -60,22 +60,21 @@ class Applicant(BaseModel):
     job: str
     work_period: str
     monthly_income: int
-    living_expenses: List[str]
+    living_expenses: List[str] = []
     real_estate: str
     real_estate_price: int
     mortgage_loan: int
     car: str
-    financial_assets: List[FinancialAsset]
+    financial_assets: List[FinancialAsset] = []
     credit_debt: int
     secured_debt: int
     priority_debt: int
-    debt_causes: List[str]
+    debt_causes: List[str] = []
 
-         
-    basic_info: BasicInfo
-    income_info: IncomeExpenseInfo
-    asset_info: AssetInfo
-    debt_info: DebtInfo        
+    basic_info: Optional[BasicInfo] = None
+    income_info: Optional[IncomeExpenseInfo] = None
+    asset_info: Optional[AssetInfo] = None
+    debt_info: Optional[DebtInfo] = None
     
 class SearchRequest(BaseModel):
     question: str 
