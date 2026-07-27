@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import List, Optional
 from datetime import datetime
 from input_service.basic_info import BasicInfo
 from input_service.income_info import IncomeExpenseInfo
@@ -44,9 +44,31 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     answer: str
+
+
 # 개인회생 신청자 정보
+class FinancialAsset(BaseModel):
+    name: str
+    amount: int
+
+
 class Applicant(BaseModel):
-    basic_info: BasicInfo
-    income_info: IncomeExpenseInfo
-    asset_info: AssetInfo
-    debt_info: DebtInfo        
+    name: str
+    region: str
+    dependents: int
+    has_rehab_history: bool
+    job: str
+    work_period: str
+    monthly_income: int
+    living_expenses: List[str]
+    real_estate: str
+    real_estate_price: int
+    mortgage_loan: int
+    car: str
+    financial_assets: List[FinancialAsset]
+    credit_debt: int
+    secured_debt: int
+    priority_debt: int
+    debt_causes: List[str]
+
+         

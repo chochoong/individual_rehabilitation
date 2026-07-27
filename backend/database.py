@@ -2,6 +2,8 @@ import oracledb
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
+from models import Base
+
 oracledb.init_oracle_client(lib_dir=r"C:\oracle\instantclient_21_22")
 
 dsn = oracledb.makedsn("localhost", 1521, sid="XE")
@@ -9,6 +11,9 @@ DATABASE_URL = f"oracle+oracledb://kosa:1234@{dsn}"
 
 engine = create_engine(DATABASE_URL, max_identifier_length=30)
 sessionFactory = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# 애플리컨트 저장용 테이블이 없으면 생성합니다.
+Base.metadata.create_all(engine)
 
 def get_db():
     session = sessionFactory()

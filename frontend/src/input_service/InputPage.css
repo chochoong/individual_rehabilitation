@@ -1,89 +1,85 @@
 /* ==========================================
-   하단 네비게이션 & 임시저장 영역 Style
-   ========================================== */
-.navigation-bar {
-  margin-top: 32px;
-  padding-top: 20px;
-  border-top: 1px solid #eef2f6;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+   InputPage 전체 레이아웃
+========================================== */
+
+.input-page-container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
 }
 
-/* 1층: 임시 저장 버튼 (우측 정렬 및 배경 구분) */
-.temp-save-wrapper {
+/* ==========================================
+   진행바
+========================================== */
+
+.progress-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.progress-item {
+  flex: 1 1 0;
+  text-align: center;
+}
+
+.progress-text {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: transparent;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.progress-item.completed .progress-text {
+  background: #3182ce;
+  color: #fff;
+}
+
+.progress-item.active .progress-text {
+  box-shadow: 0 2px 6px rgba(49,130,206,0.15);
+}
+
+.progress-sep {
+  height: 4px;
+  background: #e5e7eb;
+  border-radius: 2px;
+  margin: 8px 0;
+}
+
+.progress-sep.completed {
+  background: #3182ce;
+}
+
+/* ==========================================
+   입력 영역
+========================================== */
+
+.tab-content {
+  margin-top: 20px;
+}
+
+/* ==========================================
+   하단 버튼
+========================================== */
+
+.action-buttons {
+  margin-top: 30px;
   display: flex;
   justify-content: flex-end;
 }
 
 .btn-temp-save {
-  width: 100%; /* 모바일/기본 전체 너비 지정 원할시 사용, 적절한 크기는 auto */
-  max-width: 160px;
-  padding: 8px 16px;
-  background-color: #f8fafc;
-  color: #4a5568;
+  padding: 10px 20px;
+  background: #edf2f7;
   border: 1px solid #cbd5e0;
   border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 
 .btn-temp-save:hover {
-  background-color: #edf2f7;
-  border-color: #a0aec0;
-}
-
-/* 2층: 이전 / 다음 버튼 (양쪽 정렬) */
-.step-buttons-wrapper {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.btn-nav {
-  flex: 1;
-  padding: 12px 20px;
-  font-size: 15px;
-  font-weight: 600;
-  border-radius: 8px;
-  cursor: pointer;
-  border: none;
-  transition: all 0.2s ease;
-}
-
-/* [이전] 버튼 */
-.btn-prev {
-  background-color: #edf2f7;
-  color: #4a5568;
-}
-
-.btn-prev:hover:not(:disabled) {
-  background-color: #e2e8f0;
-}
-
-.btn-prev:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-/* [다음] 버튼 */
-.btn-next {
-  background-color: #3182ce;
-  color: #ffffff;
-}
-
-.btn-next:hover {
-  background-color: #2b6cb0;
-}
-
-/* [제출하기] 버튼 (마지막 단계) */
-.btn-submit {
-  background-color: #38a169;
-  color: #ffffff;
-}
-
-.btn-submit:hover {
-  background-color: #2f855a;
+  background: #e2e8f0;
 }

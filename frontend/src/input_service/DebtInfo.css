@@ -1,5 +1,3 @@
-
-
 .basic-container {
   max-width: 700px;
   margin: 0 auto;
@@ -39,9 +37,78 @@
   box-sizing: border-box;
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.form-group textarea:focus {
   outline: none;
   border-color: #3182ce;
+}
+
+.debt-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.debt-total {
+  color: #4a5568;
+  font-size: 13px;
+}
+
+.debt-group {
+  display: grid;
+  gap: 16px;
+}
+
+.debt-item {
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+  display: grid;
+  gap: 10px;
+}
+
+.debt-row-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.add-debt-btn,
+.remove-debt-btn {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.add-debt-btn {
+  margin-top: 12px;
+  background: #3182ce;
+  color: white;
+}
+
+.remove-debt-btn {
+  background: #e53e3e;
+  color: white;
+}
+
+.remove-debt-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.form-group textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px;
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  font-size: 15px;
+  resize: vertical;
 }
 
 .checkbox-group {
@@ -54,10 +121,6 @@
   display: flex;
   justify-content: space-between;
   margin-top: 30px;
-}
-
-.button-group.center {
-  justify-content: center;
 }
 
 .prev-btn,

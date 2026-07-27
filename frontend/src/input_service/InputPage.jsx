@@ -11,6 +11,7 @@ const API_URL = "http://localhost:8701/input";
 const STORAGE_KEY = "input_page_temp_data";
 
 function InputPage() {
+
   const [step, setStep] = useState(1);
 
   const initialFormData = {
@@ -22,38 +23,136 @@ function InputPage() {
     job: "",
     work_period: "",
     monthly_income: 0,
-    living_expenses: [],
+    living_expenses: [{ name: "", amount: 0 }],
 
     real_estate: "",
     real_estate_price: 0,
     mortgage_loan: 0,
     car: "",
-    financial_assets: [],
+    financial_assets: [{ name: "", amount: 0 }],
 
     credit_debt: 0,
     secured_debt: 0,
     priority_debt: 0,
     debt_causes: [],
+    debt_cause_description: "",
+    credit_debt_items: [{ name: "", amount: 0 }],
+    secured_debt_items: [{ name: "", amount: 0 }],
+    priority_debt_items: [{ name: "", amount: 0 }],
   };
 
   const [formData, setFormData] = useState(initialFormData);
 
   useEffect(() => {
+
     const savedData = localStorage.getItem(STORAGE_KEY);
 
     if (savedData) {
-      try {
-        const { savedStep, savedForm } = JSON.parse(savedData);
 
-        if (savedForm) setFormData(savedForm);
+      try {
+
+        const { savedStep, savedForm } = JSON.parse(savedData);
+        if (savedForm) {
+          const normalized = { ...savedForm };
+
+          // Normalize living_expenses which previously could be array of strings or living_expenses_amounts object
+          if (Array.isArray(normalized.living_expenses)) {
+            normalized.living_expenses = normalized.living_expenses.map((it) => {
+              if (typeof it === "string") return { name: it, amount: 0 };
+              if (typeof it === "object") return { name: it.name || "", amount: Number(it.amount || 0) };
+              return { name: "", amount: 0 };
+            });
+          } else if (normalized.living_expenses && typeof normalized.living_expenses === "object") {
+            // in case it's an object mapping (old living_expenses_amounts), convert
+            const arr = [];
+            for (const k of Object.keys(normalized.living_expenses)) {
+              arr.push({ name: k, amount: Number(normalized.living_expenses[k] || 0) });
+            }
+            normalized.living_expenses = arr.length ? arr : [{ name: "", amount: 0 }];
+          } else if (normalized.living_expenses_amounts && typeof normalized.living_expenses_amounts === "object") {
+            const arr = [];
+            for (const k of Object.keys(normalized.living_expenses_amounts)) {
+              arr.push({ name: k, amount: Number(normalized.living_expenses_amounts[k] || 0) });
+            }
+            normalized.living_expenses = arr.length ? arr : [{ name: "", amount: 0 }];
+          } else {
+            normalized.living_expenses = [{ name: "", amount: 0 }];
+          }
+
+          if (Array.isArray(normalized.financial_assets)) {
+            normalized.financial_assets = normalized.financial_assets.map((it) => {
+              if (typeof it === "string") return { name: it, amount: 0 };
+              if (typeof it === "object") return { name: it.name || "", amount: Number(it.amount || 0) };
+              return { name: "", amount: 0 };
+            });
+          } else {
+            normalized.financial_assets = [{ name: "", amount: 0 }];
+          }
+
+          const debtFields = ["credit_debt_items", "secured_debt_items", "priority_debt_items"];
+          debtFields.forEach((field) => {
+            if (Array.isArray(normalized[field])) {
+              normalized[field] = normalized[field].map((it) => {
+                if (typeof it === "string") return { name: it, amount: 0 };
+                if (typeof it === "object") return { name: it.name || "", amount: Number(it.amount || 0) };
+                return { name: "", amount: 0 };
+              });
+            } else {
+              normalized[field] = [{ name: "", amount: 0 }];
+            }
+          });
+
+          if (typeof normalized.debt_cause_description !== "string") {
+            normalized.debt_cause_description = "";
+          }
+
+          setFormData(normalized);
+        }
         if (savedStep) setStep(savedStep);
+
       } catch (err) {
+
         console.error(err);
+
       }
+
     }
+
   }, []);
 
+  const handleChange = (field, value) => {
+
+    setFormData((prev) => {
+      const next = {
+        ...prev,
+        [field]: value,
+      };
+      // Update completedSteps: remove any completed step that no longer satisfies completion
+      setCompletedSteps((prevCompleted) => prevCompleted.filter(id => isStepCompleteFor(next, id)));
+      return next;
+    });
+
+  };
+
+  const handleCheckboxChange = (field, item) => {
+
+    setFormData((prev) => {
+      const list = prev[field] || [];
+      const updated = list.includes(item)
+        ? list.filter((i) => i !== item)
+        : [...list, item];
+      const next = {
+        ...prev,
+        [field]: updated,
+      };
+      setCompletedSteps((prevCompleted) => prevCompleted.filter(id => isStepCompleteFor(next, id)));
+      return next;
+    });
+
+  };
+
   const handleTempSave = () => {
+
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify({
@@ -63,38 +162,39 @@ function InputPage() {
     );
 
     alert("임시 저장되었습니다.");
-  };
 
-  const handleChange = (field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const handleCheckboxChange = (field, item) => {
-    setFormData((prev) => {
-      const list = prev[field] || [];
-
-      const updated = list.includes(item)
-        ? list.filter((i) => i !== item)
-        : [...list, item];
-
-      return {
-        ...prev,
-        [field]: updated,
-      };
-    });
   };
 
   const handleSubmit = async () => {
+
     try {
+
+      const payload = { ...formData };
+      // Convert living_expenses to names array for backend compatibility
+      payload.living_expenses = (formData.living_expenses || [])
+        .map((i) => (i.name || "").toString())
+        .filter((name) => name.trim() !== "");
+      payload.financial_assets = (formData.financial_assets || [])
+        .map((i) => ({ name: (i.name || "").toString(), amount: Number(i.amount || 0) }))
+        .filter((item) => item.name.trim() !== "" || item.amount > 0);
+      payload.credit_debt = (formData.credit_debt_items || [])
+        .reduce((sum, item) => sum + Number(item.amount || 0), 0);
+      payload.secured_debt = (formData.secured_debt_items || [])
+        .reduce((sum, item) => sum + Number(item.amount || 0), 0);
+      payload.priority_debt = (formData.priority_debt_items || [])
+        .reduce((sum, item) => sum + Number(item.amount || 0), 0);
+      payload.debt_cause_description = formData.debt_cause_description || "";
+
       const res = await fetch(API_URL, {
+
         method: "POST",
+
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+
+        body: JSON.stringify(payload),
+
       });
 
       if (!res.ok) throw new Error("서버 오류");
@@ -104,10 +204,15 @@ function InputPage() {
       alert("제출 완료!");
 
       localStorage.removeItem(STORAGE_KEY);
+
     } catch (err) {
+
       console.error(err);
+
       alert("제출 실패");
+
     }
+
   };
 
   const steps = [
@@ -117,29 +222,110 @@ function InputPage() {
     { id: 4, title: "채무 정보" },
   ];
 
+  const [completedSteps, setCompletedSteps] = useState([]);
+
+  const markStepCompleted = (id) => {
+    setCompletedSteps((prev) => {
+      if (prev.includes(id)) return prev;
+      return [...prev, id];
+    });
+  };
+
+  const handleAdvance = (currentId) => {
+    // Only mark completed if the step's required fields are filled
+    if (isStepComplete(currentId)) {
+      markStepCompleted(currentId);
+    }
+    setStep((s) => Math.min(4, currentId + 1));
+  };
+
+  const handleFinalSubmit = async () => {
+    if (isStepComplete(4)) markStepCompleted(4);
+    await handleSubmit();
+  };
+
+  const isStepComplete = (id) => {
+    return isStepCompleteFor(formData, id);
+  };
+
+  const isStepCompleteFor = (data, id) => {
+    try {
+      if (id === 1) {
+        return (
+          (data.name || "").toString().trim() !== "" &&
+          (data.region || "").toString().trim() !== ""
+        );
+      }
+
+      if (id === 2) {
+        const items = Array.isArray(data.living_expenses) ? data.living_expenses : [];
+        const sumAmounts = items.reduce((s, it) => s + Number(it.amount || 0), 0);
+        return (
+          ((data.job || "").toString().trim() !== "") &&
+          ((data.work_period || "").toString().trim() !== "") &&
+          (Number(data.monthly_income) > 0) &&
+          (sumAmounts > 0)
+        );
+      }
+
+      if (id === 3) {
+        const hasFinancialAsset = Array.isArray(data.financial_assets)
+          && data.financial_assets.some((item) => {
+            return ((item?.name || "").toString().trim() !== "") || Number(item?.amount || 0) > 0;
+          });
+        return (
+          ((data.real_estate || "").toString().trim() !== "") ||
+          (Number(data.real_estate_price) > 0) ||
+          hasFinancialAsset
+        );
+      }
+
+      if (id === 4) {
+        return (
+          (Number(data.credit_debt) > 0) ||
+          (Number(data.secured_debt) > 0) ||
+          (Array.isArray(data.debt_causes) && data.debt_causes.length > 0)
+        );
+      }
+
+      return false;
+    } catch (e) {
+      return false;
+    }
+  };
   return (
     <div className="input-page-container">
 
-      {/* 진행 표시 */}
-      <div className="tab-menu">
-        {steps.map((s) => (
-          <button
-            key={s.id}
-            className={`tab-item ${step === s.id ? "active" : ""}`}
-          >
-            {s.title}
-          </button>
-        ))}
+      {/* 진행바 (chapter titles only, left-to-right) */}
+      <div className="progress-bar">
+        {steps.map((item, index) => {
+          // Completed only when explicitly marked (user advanced with filled fields)
+          const completed = completedSteps.includes(item.id);
+          const active = step === item.id;
+          return (
+            <div
+              className={`progress-item ${completed ? "completed" : "incomplete"} ${active ? "active" : ""}`}
+              key={item.id}
+            >
+              <div className="progress-text">{item.title}</div>
+
+              {index < steps.length - 1 && (
+                <div className={`progress-sep ${completed ? "completed" : ""}`} />
+              )}
+            </div>
+          );
+        })}
       </div>
 
-      {/* 내용 */}
+      {/* 현재 단계 화면 */}
+
       <div className="tab-content">
 
         {step === 1 && (
           <BasicInfo
             data={formData}
             onChange={handleChange}
-            onNext={() => setStep(2)}
+            onNext={() => handleAdvance(1)}
           />
         )}
 
@@ -149,7 +335,7 @@ function InputPage() {
             onChange={handleChange}
             onCheckboxChange={handleCheckboxChange}
             onPrev={() => setStep(1)}
-            onNext={() => setStep(3)}
+            onNext={() => handleAdvance(2)}
           />
         )}
 
@@ -159,7 +345,7 @@ function InputPage() {
             onChange={handleChange}
             onCheckboxChange={handleCheckboxChange}
             onPrev={() => setStep(2)}
-            onNext={() => setStep(4)}
+            onNext={() => handleAdvance(3)}
           />
         )}
 
@@ -169,16 +355,29 @@ function InputPage() {
             onChange={handleChange}
             onCheckboxChange={handleCheckboxChange}
             onPrev={() => setStep(3)}
-            onSubmit={handleSubmit}
+            onSubmit={handleFinalSubmit}
           />
         )}
 
       </div>
 
-      <div className="action-buttons">
-        <button onClick={handleTempSave}>
-          임시 저장
-        </button>
+      {/* 하단 버튼 */}
+
+      <div className="navigation-bar">
+
+        <div className="temp-save-wrapper">
+
+          <button
+            className="btn-temp-save"
+            onClick={handleTempSave}
+          >
+            💾 임시 저장
+          </button>
+
+        </div>
+
+        {/* step-buttons-wrapper removed to keep a single Next button */}
+
       </div>
 
     </div>

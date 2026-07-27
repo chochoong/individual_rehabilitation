@@ -1,7 +1,5 @@
 import os
 from dotenv import load_dotenv
-import chromadb
-from sentence_transformers import SentenceTransformer
 from openai import OpenAI
 
 load_dotenv()
@@ -10,12 +8,20 @@ client_llm = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 CHROMA_PATH = os.path.join(CURRENT_DIR, "..", "chroma_db")
 
-db_client = chromadb.PersistentClient(path=CHROMA_PATH)
-collection = db_client.get_collection(name="individual_rehab_qna")
-embed_model = SentenceTransformer("jhgan/ko-sroberta-multitask")
+# chromadb와 임베딩 모델을 지연 로드합니다.
+
+def get_chroma_collection():
+    import chromadb
+    from sentence_transformers import SentenceTransformer
+
+    client = chromadb.PersistentClient(path=CHROMA_PATH)
+    collection = client.get_collection(name="individual_rehab_qna")
+    embed_model = SentenceTransformer("jhgan/ko-sroberta-multitask")
+    return collection, embed_model
 
 
 def search(query, top_k=3):
+    collection, embed_model = get_chroma_collection()
     query_vec = embed_model.encode([query]).tolist()
     results = collection.query(query_embeddings=query_vec, n_results=top_k)
     return results["metadatas"][0]

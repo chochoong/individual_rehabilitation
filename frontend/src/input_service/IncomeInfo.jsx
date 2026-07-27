@@ -1,3 +1,5 @@
+import "./IncomeInfo.css";
+
 function IncomeInfo({
     data,
     onChange,
@@ -11,7 +13,9 @@ function IncomeInfo({
             <h2>💰 소득 · 지출 정보</h2>
 
             <p className="description">
-                현재 소득과 월평균 지출을 입력해주세요.
+                현재 소득과 월평균 지출 정보를 입력해주세요.
+                <br />
+                입력한 내용은 자동으로 저장됩니다.
             </p>
 
             <hr />
@@ -47,7 +51,7 @@ function IncomeInfo({
 
                 <input
                     type="number"
-                    placeholder="0"
+                    placeholder="예) 2500000"
                     value={data.monthly_income}
                     onChange={(e) =>
                         onChange(
@@ -59,61 +63,98 @@ function IncomeInfo({
             </div>
 
             <div className="form-group">
-                <label>생활비</label>
+                <label>생활비 (월 고정지출)</label>
 
-                <div className="checkbox-group">
-
-                    <label>
-                        <input
-                            type="checkbox"
-                            checked={data.living_expenses.includes("식비")}
-                            onChange={() =>
-                                onCheckboxChange("living_expenses", "식비")
-                            }
-                        />
-                        식비
-                    </label>
-
-                    <label>
-                        <input
-                            type="checkbox"
-                            checked={data.living_expenses.includes("교통비")}
-                            onChange={() =>
-                                onCheckboxChange("living_expenses", "교통비")
-                            }
-                        />
-                        교통비
-                    </label>
-
-                    <label>
-                        <input
-                            type="checkbox"
-                            checked={data.living_expenses.includes("통신비")}
-                            onChange={() =>
-                                onCheckboxChange("living_expenses", "통신비")
-                            }
-                        />
-                        통신비
-                    </label>
-
+                <div className="amounts-group">
+                    {((Array.isArray(data.living_expenses) && data.living_expenses.length > 0)
+                        ? data.living_expenses
+                        : [{ name: "", amount: 0 }]
+                    ).map((item, idx) => (
+                        <div className="amount-item" key={idx}>
+                            <div className="amount-row-header">
+                                <span>항목 {idx + 1}</span>
+                                <button
+                                    type="button"
+                                    className="remove-expense-btn"
+                                    onClick={() => {
+                                        const next = Array.isArray(data.living_expenses)
+                                            ? data.living_expenses.slice()
+                                            : [];
+                                        next.splice(idx, 1);
+                                        if (next.length === 0) {
+                                            next.push({ name: "", amount: 0 });
+                                        }
+                                        onChange("living_expenses", next);
+                                    }}
+                                    disabled={!Array.isArray(data.living_expenses) || data.living_expenses.length <= 1}
+                                >
+                                    삭제
+                                </button>
+                            </div>
+                            <label>항목</label>
+                            <input
+                                type="text"
+                                placeholder="예: 식비, 교통비, 통신비, 보험비"
+                                value={item.name || ""}
+                                onChange={(e) => {
+                                    const next = Array.isArray(data.living_expenses)
+                                        ? data.living_expenses.slice()
+                                        : [];
+                                    next[idx] = { ...(next[idx] || {}), name: e.target.value };
+                                    if (idx === next.length - 1 && e.target.value.trim() !== "") {
+                                        next.push({ name: "", amount: 0 });
+                                    }
+                                    onChange("living_expenses", next);
+                                }}
+                            />
+                            <label>금액</label>
+                            <input
+                                type="number"
+                                placeholder="예) 200000"
+                                value={item.amount || ""}
+                                onChange={(e) => {
+                                    const next = Array.isArray(data.living_expenses)
+                                        ? data.living_expenses.slice()
+                                        : [{ name: "", amount: 0 }];
+                                    next[idx] = { ...(next[idx] || {}), amount: Number(e.target.value) };
+                                    onChange("living_expenses", next);
+                                }}
+                            />
+                        </div>
+                    ))}
                 </div>
 
+                <button
+                    type="button"
+                    className="add-expense-btn"
+                    onClick={() => {
+                        const next = Array.isArray(data.living_expenses)
+                            ? data.living_expenses.slice()
+                            : [];
+                        next.push({ name: "", amount: 0 });
+                        onChange("living_expenses", next);
+                    }}
+                >
+                    항목 추가
+                </button>
             </div>
 
-            <div
-                style={{
-                    marginTop: "30px",
-                    display: "flex",
-                    justifyContent: "space-between",
-                }}
-            >
-                <button onClick={onPrev}>
+            <div className="button-group">
+
+                <button
+                    className="prev-btn"
+                    onClick={onPrev}
+                >
                     ← 이전
                 </button>
 
-                <button onClick={onNext}>
+                <button
+                    className="next-btn"
+                    onClick={onNext}
+                >
                     다음 →
                 </button>
+
             </div>
 
         </div>

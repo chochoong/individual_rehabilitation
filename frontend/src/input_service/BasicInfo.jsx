@@ -1,3 +1,5 @@
+import "./BasicInfo.css";
+
 function BasicInfo({ data, onChange, onNext }) {
     return (
         <div className="basic-container">
@@ -58,19 +60,11 @@ function BasicInfo({ data, onChange, onNext }) {
                             onChange("has_rehab_history", e.target.checked)
                         }
                     />
-                    <span>있음</span>
                 </div>
             </div>
 
-            {/* 버튼 영역 */}
-            <div
-                style={{
-                    marginTop: "30px",
-                    display: "flex",
-                    justifyContent: "flex-end",
-                }}
-            >
-                <button onClick={onNext}>
+            <div className="button-group center">
+                <button className="next-btn" onClick={onNext}>
                     다음 →
                 </button>
             </div>

@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import text
+import json
 from database import get_db
-from schema import LawQnaResponse, LawQnaUpdate , ChatRequest , ChatResponse
+from schema import LawQnaResponse, LawQnaUpdate, ChatRequest, ChatResponse
 from project_kwon.generate_answer import generate_answer
-from schema import LawQnaResponse, LawQnaUpdate 
 from schema import Applicant
+from models import ApplicantModel
 
 router = APIRouter()
 
@@ -71,8 +72,33 @@ def chat(request: ChatRequest):
     return {"answer": answer}
 
 @router.post("/input")
-def create_input(applicant: Applicant):
+def create_input(applicant: Applicant, db: Session = Depends(get_db)):
+    record = ApplicantModel(
+        name=applicant.name,
+        region=applicant.region,
+        dependents=applicant.dependents,
+        has_rehab_history=applicant.has_rehab_history,
+        job=applicant.job,
+        work_period=applicant.work_period,
+        monthly_income=applicant.monthly_income,
+        living_expenses_json=json.dumps(applicant.living_expenses, ensure_ascii=False),
+        real_estate=applicant.real_estate,
+        real_estate_price=applicant.real_estate_price,
+        mortgage_loan=applicant.mortgage_loan,
+        car=applicant.car,
+        financial_assets_json=json.dumps(applicant.financial_assets, ensure_ascii=False),
+        credit_debt=applicant.credit_debt,
+        secured_debt=applicant.secured_debt,
+        priority_debt=applicant.priority_debt,
+        debt_causes_json=json.dumps(applicant.debt_causes, ensure_ascii=False),
+    )
+
+    db.add(record)
+    db.commit()
+    db.refresh(record)
+
     return {
         "message": "입력 완료",
-        "data": applicant
+        "applicant_id": record.id,
+        "data": applicant,
     }
