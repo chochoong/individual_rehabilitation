@@ -5,6 +5,8 @@ from database import get_db
 from schema import LawQnaResponse, LawQnaUpdate , ChatRequest , ChatResponse ,SearchRequest ,ApplicationFormRequest
 from project_kwon.generate_answer import generate_answer
 from rehabilitation_case.case import run, retriever  
+from calculate.calculation_schema import CalculationRequest, CalculationResponse
+from calculate.calculation_service import calculate_request
 
 router = APIRouter()
 
@@ -226,9 +228,8 @@ def get_latest_application_summary(db: Session = Depends(get_db)):
 
     query_text = " / ".join(parts)
 
-    return {"query_text": query_text, "raw_data": data}   
+    return {"query_text": query_text, "raw_data": data} 
 
-
-@router.post("/repayment", response_model=RepaymentCalculationResponse)
-def repayment_calculation(request: RepaymentCalculationRequest) -> RepaymentCalculationResponse:
-    return calculate_repayment(request.case)
+@router.post("/calculate", response_model=CalculationResponse)
+def calculate(request: CalculationRequest):
+    return calculate_request(request)
