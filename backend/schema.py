@@ -76,3 +76,4 @@ class ApplicationFormRequest(BaseModel):
     securedDebt: Optional[str] = ""
     priorityDebt: Optional[str] = ""
     debtReasons: Optional[Dict[str, bool]] = {}    
+    
