@@ -13,7 +13,7 @@ function renderWithBold(text) {
   });
 }
 
-function ChatBot() {
+function ChatBot({ onBack }) {
   const [messages, setMessages] = useState([
     { role: 'assistant', content: '안녕하세요. 개인회생 관련 궁금하신 점을 물어봐 주세요.' }
   ]);
@@ -67,6 +67,11 @@ function ChatBot() {
   return (
     <div className="chatbot-container">
       <div className="chatbot-header">
+        {onBack && (
+          <button className="btn-back" onClick={onBack} style={{ marginBottom: '10px' }}>
+            ← 사례 목록으로
+          </button>
+        )}
         <h1>QnA</h1>
         <span className="chatbot-subtitle">개인회생 전문 상담 챗봇</span>
       </div>
