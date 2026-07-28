@@ -69,32 +69,11 @@ def parse_case(file_path: str):
 embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
 
 
-# def create_vectorstore(documents):
-#     db_path = "./case_db"
-#     if os.path.exists(db_path):
-#         shutil.rmtree(db_path)
-
-#     vectorstore = Chroma(
-#         collection_name="rehabilitation_case",
-#         embedding_function=embeddings,
-#         persist_directory=db_path,
-#     )
-#     vectorstore.add_documents(documents)
-#     return vectorstore
-
-
 def create_vectorstore(documents):
     db_path = "./case_db"
-   # DB 폴더가 이미 존재하는 경우 기존 Chroma DB 로드
-    if os.path.exists(db_path) and os.listdir(db_path):
-        print("기존 VectorDB를 로드합니다.")
-        return Chroma(
-            collection_name="rehabilitation_case",
-            persist_directory=db_path,
-            embedding_function=embeddings # 사용 중인 임베딩 객체
-        )
-    
-    # DB가 없는 경우에만 새로 생성 및 저장
+    if os.path.exists(db_path):
+        shutil.rmtree(db_path)
+
     vectorstore = Chroma(
         collection_name="rehabilitation_case",
         embedding_function=embeddings,
@@ -102,6 +81,27 @@ def create_vectorstore(documents):
     )
     vectorstore.add_documents(documents)
     return vectorstore
+
+
+# def create_vectorstore(documents):
+#     db_path = "./case_db"
+#    # DB 폴더가 이미 존재하는 경우 기존 Chroma DB 로드
+#     if os.path.exists(db_path) and os.listdir(db_path):
+#         print("기존 VectorDB를 로드합니다.")
+#         return Chroma(
+#             collection_name="rehabilitation_case",
+#             persist_directory=db_path,
+#             embedding_function=embeddings # 사용 중인 임베딩 객체
+#         )
+    
+#     # DB가 없는 경우에만 새로 생성 및 저장
+#     vectorstore = Chroma(
+#         collection_name="rehabilitation_case",
+#         embedding_function=embeddings,
+#         persist_directory=db_path,
+#     )
+#     vectorstore.add_documents(documents)
+#     return vectorstore
 
 
 class HybridRetriever:
