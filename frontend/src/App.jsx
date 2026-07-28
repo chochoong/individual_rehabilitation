@@ -56,39 +56,21 @@ function App() {
     return (
       <InputPage
         onPrev={() => setView("qna")}
-        onComplete={() => setView("case")}
-        onSubmit={async (formData) => {
+        onComplete={async (formData) => {
           if (isSubmitting) return
           setIsSubmitting(true)
 
           try {
-            // 1. 신청서 저장 (원본 formData 그대로 저장)
-            const res = await fetch(`${API_BASE}/application`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(formData),
-            })
-            const result = await res.json()
-
-            if (!res.ok || result.status !== "success") {
-              alert("저장 실패: " + (result.message || "오류 발생"))
-              return
-            }
-
-            // 2. 계산 API 호출 (toCalculationRequest로 변환된 요청 전송)
+            // InputPage가 이미 /input에 저장을 마쳤으므로, 여기서는 계산 결과만 조회한다.
             const calcResult = await calculateFromForm(formData)
             setCalculationResponse(calcResult)
             setView("Calculation")
-
           } catch (err) {
-            console.error("제출 요청 에러:", err)
-            alert(err.message || "서버 통신 실패")
+            console.error("계산 요청 에러:", err)
+            alert(err.message || "계산 결과를 불러오지 못했습니다.")
           } finally {
             setIsSubmitting(false)
           }
-        }}
-        onSaveDraft={(formData) => {
-          alert("임시 저장되었습니다.")
         }}
       />
     )

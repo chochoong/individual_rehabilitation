@@ -16,13 +16,15 @@ function InputPage({ onPrev, onComplete }) {
 
   const initialFormData = {
     name: "",
+    birthdate: "",
+    gender: "",
     region: "",
     dependents: 0,
     has_rehab_history: false,
 
     job: "",
     work_period: "",
-    monthly_income: 0,
+    monthly_income: "",
     living_expenses: [{ name: "", amount: 0 }],
 
     real_estate: "",
@@ -235,18 +237,25 @@ function InputPage({ onPrev, onComplete }) {
   };
 
   const handleAdvance = (currentId) => {
-    // Only mark completed if the step's required fields are filled
-    if (isStepComplete(currentId)) {
-      markStepCompleted(currentId);
+    const missing = getMissingFields(currentId, formData);
+    if (missing.length > 0) {
+      alert(`다음 단계로 넘어가려면 아래 항목을 입력해주세요.\n\n- ${missing.join("\n- ")}`);
+      return;
     }
+    markStepCompleted(currentId);
     setStep((s) => Math.min(4, currentId + 1));
   };
 
   const handleFinalSubmit = async () => {
-    if (isStepComplete(4)) markStepCompleted(4);
+    const missing = getMissingFields(4, formData);
+    if (missing.length > 0) {
+      alert(`제출하려면 아래 항목을 입력해주세요.\n\n- ${missing.join("\n- ")}`);
+      return;
+    }
+    markStepCompleted(4);
     const success = await handleSubmit();
     if (success && typeof onComplete === "function") {
-      onComplete();
+      onComplete(formData);
     }
   };
 
@@ -256,55 +265,48 @@ function InputPage({ onPrev, onComplete }) {
 
   const isStepCompleteFor = (data, id) => {
     try {
-      if (id === 1) {
-        return (
-          (data.name || "").toString().trim() !== "" &&
-          (data.region || "").toString().trim() !== ""
-        );
-      }
-
-      if (id === 2) {
-        const items = Array.isArray(data.living_expenses) ? data.living_expenses : [];
-        const sumAmounts = items.reduce((s, it) => s + Number(it.amount || 0), 0);
-        return (
-          ((data.job || "").toString().trim() !== "") &&
-          ((data.work_period || "").toString().trim() !== "") &&
-          (Number(data.monthly_income) > 0) &&
-          (sumAmounts > 0)
-        );
-      }
-
-      if (id === 3) {
-        const hasFinancialAsset = Array.isArray(data.financial_assets)
-          && data.financial_assets.some((item) => {
-            return ((item?.name || "").toString().trim() !== "") || Number(item?.amount || 0) > 0;
-          });
-        return (
-          ((data.real_estate || "").toString().trim() !== "") ||
-          (Number(data.real_estate_price) > 0) ||
-          hasFinancialAsset
-        );
-      }
-
-      if (id === 4) {
-        const creditTotal = (Array.isArray(data.credit_debt_items) ? data.credit_debt_items : [])
-          .reduce((sum, item) => sum + Number(item.amount || 0), 0);
-        const securedTotal = (Array.isArray(data.secured_debt_items) ? data.secured_debt_items : [])
-          .reduce((sum, item) => sum + Number(item.amount || 0), 0);
-        const priorityTotal = (Array.isArray(data.priority_debt_items) ? data.priority_debt_items : [])
-          .reduce((sum, item) => sum + Number(item.amount || 0), 0);
-        return (
-          creditTotal > 0 ||
-          securedTotal > 0 ||
-          priorityTotal > 0 ||
-          (Array.isArray(data.debt_causes) && data.debt_causes.length > 0)
-        );
-      }
-
-      return false;
+      return getMissingFields(id, data).length === 0;
     } catch (e) {
       return false;
     }
+  };
+
+  // 단계별 필수 입력 항목이 비어 있으면 사람이 읽을 수 있는 안내 문구 목록을 반환
+  const getMissingFields = (id, data) => {
+    const missing = [];
+
+    if (id === 1) {
+      if ((data.name || "").toString().trim() === "") missing.push("이름");
+      if ((data.birthdate || "").toString().trim() === "") missing.push("생년월일");
+      if ((data.gender || "").toString().trim() === "") missing.push("성별");
+      if ((data.region || "").toString().trim() === "") missing.push("거주지역");
+    }
+
+    if (id === 2) {
+      const items = Array.isArray(data.living_expenses) ? data.living_expenses : [];
+      const sumAmounts = items.reduce((s, it) => s + Number(it.amount || 0), 0);
+      if ((data.job || "").toString().trim() === "") missing.push("직업");
+      if ((data.work_period || "").toString().trim() === "") missing.push("근무기간");
+      if (!(Number(data.monthly_income) > 0)) missing.push("월 소득");
+      if (!(sumAmounts > 0)) missing.push("생활비 (항목명과 금액을 1개 이상 입력)");
+    }
+
+    // id === 3 (재산 정보): 보유 재산이 없을 수 있으므로 필수 항목 없음 — 항상 통과
+
+    if (id === 4) {
+      const creditTotal = (Array.isArray(data.credit_debt_items) ? data.credit_debt_items : [])
+        .reduce((sum, item) => sum + Number(item.amount || 0), 0);
+      const securedTotal = (Array.isArray(data.secured_debt_items) ? data.secured_debt_items : [])
+        .reduce((sum, item) => sum + Number(item.amount || 0), 0);
+      const priorityTotal = (Array.isArray(data.priority_debt_items) ? data.priority_debt_items : [])
+        .reduce((sum, item) => sum + Number(item.amount || 0), 0);
+      const hasDebtCause = Array.isArray(data.debt_causes) && data.debt_causes.length > 0;
+      if (!(creditTotal > 0 || securedTotal > 0 || priorityTotal > 0 || hasDebtCause)) {
+        missing.push("채무 금액(신용/담보/우선변제 중 최소 하나) 또는 채무 원인 선택");
+      }
+    }
+
+    return missing;
   };
   return (
     <div className="input-page-container">

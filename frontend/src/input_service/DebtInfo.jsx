@@ -60,6 +60,10 @@ function DebtInfo({
 
             <hr />
 
+            <p style={{ fontSize: "0.85em", color: "#6b7280" }}>
+                * 채무 금액(신용/담보/우선변제 중 최소 하나) 또는 채무 원인 중 최소 한 가지는 입력해주세요.
+            </p>
+
             {debtGroups.map((group) => {
                 const items = Array.isArray(data[group.field]) ? data[group.field] : [{ name: "", amount: 0 }];
                 const total = items.reduce((sum, item) => sum + Number(item.amount || 0), 0);

@@ -9,7 +9,7 @@ const formatMoney = (value) => {
 
 const parseMoney = (value) => {
     const numeric = String(value).replace(/,/g, "").replace(/[^0-9]/g, "");
-    return numeric === "" ? 0 : Number(numeric);
+    return numeric === "" ? "" : Number(numeric);
 };
 
 function IncomeInfo({
@@ -33,7 +33,7 @@ function IncomeInfo({
             <hr />
 
             <div className="form-group">
-                <label>직업</label>
+                <label>직업 <span style={{ color: "#e11d48" }}>*</span></label>
 
                 <input
                     type="text"
@@ -46,7 +46,7 @@ function IncomeInfo({
             </div>
 
             <div className="form-group">
-                <label>근무기간</label>
+                <label>근무기간 <span style={{ color: "#e11d48" }}>*</span></label>
 
                 <input
                     type="text"
@@ -59,13 +59,13 @@ function IncomeInfo({
             </div>
 
             <div className="form-group">
-                <label>월 소득</label>
+                <label>월 소득 <span style={{ color: "#e11d48" }}>*</span></label>
 
                 <div className="money-input-row">
                     <input
                         type="text"
                         placeholder="예) 2,500,000"
-                        value={data.monthly_income ? formatMoney(data.monthly_income) : ""}
+                        value={formatMoney(data.monthly_income)}
                         onChange={(e) =>
                             onChange(
                                 "monthly_income",
@@ -74,13 +74,16 @@ function IncomeInfo({
                         }
                     />
                     <span className="amount-preview">
-                        {data.monthly_income ? `${formatMoney(data.monthly_income)}원` : ""}
+                        {formatMoney(data.monthly_income) ? `${formatMoney(data.monthly_income)}원` : ""}
                     </span>
                 </div>
             </div>
 
             <div className="form-group">
-                <label>생활비 (월 고정지출)</label>
+                <label>생활비 (월 고정지출) <span style={{ color: "#e11d48" }}>*</span></label>
+                <p style={{ fontSize: "0.85em", color: "#6b7280", margin: "4px 0" }}>
+                    항목명과 금액을 최소 1개 이상 입력해주세요.
+                </p>
 
                 <div className="amounts-group">
                     {((Array.isArray(data.living_expenses) && data.living_expenses.length > 0)

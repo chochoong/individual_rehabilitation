@@ -15,7 +15,7 @@ function BasicInfo({ data, onChange, onNext }) {
             <hr />
 
             <div className="form-group">
-                <label>이름</label>
+                <label>이름 <span style={{ color: "#e11d48" }}>*</span></label>
 
                 <input
                     type="text"
@@ -26,7 +26,7 @@ function BasicInfo({ data, onChange, onNext }) {
             </div>
 
             <div className="form-group">
-                <label>생년월일</label>
+                <label>생년월일 <span style={{ color: "#e11d48" }}>*</span></label>
                 <input
                     type="date"
                     value={data.birthdate || ""}
@@ -35,7 +35,7 @@ function BasicInfo({ data, onChange, onNext }) {
             </div>
 
             <div className="form-group">
-                <label>성별</label>
+                <label>성별 <span style={{ color: "#e11d48" }}>*</span></label>
                 <div className="radio-group">
                     <label className="radio-inline">
                         <input
@@ -62,7 +62,7 @@ function BasicInfo({ data, onChange, onNext }) {
             </div>
 
             <div className="form-group">
-                <label>거주지역</label>
+                <label>거주지역 <span style={{ color: "#e11d48" }}>*</span></label>
 
                 <input
                     type="text"

@@ -4,6 +4,7 @@ from sqlalchemy import text
 from database import get_db
 import json
 from schema import LawQnaResponse, LawQnaUpdate , ChatRequest , ChatResponse ,SearchRequest ,ApplicationFormRequest, Applicant
+from models import ApplicantModel
 from project_kwon.generate_answer import generate_answer
 from rehabilitation_case.case import run, retriever  
 from calculate.calculation_schema import CalculationRequest, CalculationResponse

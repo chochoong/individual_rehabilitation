@@ -32,6 +32,10 @@ function AssetInfo({
 
             <hr />
 
+            <p style={{ fontSize: "0.85em", color: "#6b7280" }}>
+                보유한 재산이 없다면 입력하지 않고 다음으로 진행하셔도 됩니다.
+            </p>
+
             <div className="form-group">
                 <label>부동산</label>
 
