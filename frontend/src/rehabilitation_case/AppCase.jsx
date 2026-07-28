@@ -37,12 +37,16 @@ function parseCaseDetail(text) {
   return { fields, story, correction };
 }
 
-function AppCase({ onBack, onNext }) {
+function AppCase({ onBack, onNext, calculationSummary }) {   // ← calculationSummary 추가
   const [question, setQuestion] = useState("");
   const [cases, setCases] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedCase, setSelectedCase] = useState(null);
   const [hasSearched, setHasSearched] = useState(false);
+
+  // 계산 결과와 포맷 함수를 정의
+  const result = calculationSummary?.result;
+  const won = (value) => `${Number(value || 0).toLocaleString("ko-KR")}원`;
 
   // 1. 검색 함수 (직접 인자로 텍스트를 받거나 state의 question을 사용하도록 개선)
   const handleSearch = async (searchQuery) => {
@@ -129,20 +133,43 @@ function AppCase({ onBack, onNext }) {
   }
 
   // ---------- 목록 페이지 ----------
-  return (
+    return (
     <div className="container-case">
-      <button className="btn-back" onClick={onBack}>
-        ← 이전 단계
+      <button onClick={onBack} style={{ marginBottom: "16px", background: "none", border: "none", cursor: "pointer", color: "#666" }}>
+        ← 이전 단계로
       </button>
 
       <h2>사례 검색</h2>
+
+      {/* 계산 결과 요약 카드 */}
+      {result && (
+        <div className="my-summary-card">
+          <h4>📊 내 예상 산출 결과</h4>
+          <div className="summary-row">
+            <span>예상 월 변제금</span>
+            <strong>{won(result.monthly_payment)}</strong>
+          </div>
+          <div className="summary-row">
+            <span>총 변제예정액</span>
+            <strong>{won(result.total_payment)}</strong>
+          </div>
+          <div className="summary-row">
+            <span>예상 감면액</span>
+            <strong>{won(result.expected_relief)}</strong>
+          </div>
+          <div className="summary-row">
+            <span>예상 감면율</span>
+            <strong>{Number(result.expected_relief_rate || 0).toFixed(1)}%</strong>
+          </div>
+        </div>
+      )}
 
       <div className="input-box">
         <textarea
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           placeholder="사례를 검색해보세요"
-          rows={3}
+          rows={2}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
@@ -150,7 +177,7 @@ function AppCase({ onBack, onNext }) {
             }
           }}
         />
-        <button onClick={() => handleSearch()} disabled={loading}>
+        <button onClick={handleSearch} disabled={loading}>
           {loading ? "검색 중..." : "검색"}
         </button>
       </div>
