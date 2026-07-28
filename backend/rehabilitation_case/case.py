@@ -140,7 +140,7 @@ class HybridRetriever:
             payment_score = self.similarity(user["payment"], doc.metadata.get("payment", 0))
 
             final_score = (
-                income_score * 0.4
+                income_score * 0.5      # 소득 비중을 더 높임
                 + debt_score * 0.3
                 + payment_score * 0.2
                 + embedding_score * 0.1

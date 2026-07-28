@@ -93,6 +93,7 @@ function App() {
       <AppCase
         onBack={() => setView("Calculation")}
         onNext={() => setView("chat")}
+        calculationSummary={calculationResponse}   // ← 계산 결과 전달
       />
     )
   }
