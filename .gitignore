@@ -34,3 +34,6 @@ logs/
 .vscode/
 .idea/
 .DS_Store
+
+# ── 벡터 스토어 (서버 부팅 시 재생성) ──
+backend/case_db/
